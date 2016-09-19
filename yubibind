@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-import sys
 import os
 import os.path
+import time
 
 yubi_vendor='1050'
 devdir = '/sys/bus/usb/devices'
@@ -39,16 +39,19 @@ def set_device(dev, mode):
         fo.write(dev)
 
 
-def main():
+def set_all(mode):
     devices = get_devices()
-
-    mode = sys.argv[1]
-    if mode not in ['on', 'off']:
-        print "Please indicate 'on' or 'off'"
-        sys.exit(1)
-
     for dev in devices:
         set_device(dev, mode)
+
+
+def main():
+    set_all('on')
+    try:
+        time.sleep(60)
+    except KeyboardInterrupt:
+        pass
+    set_all('off')
 
 
 if __name__ == '__main__':
