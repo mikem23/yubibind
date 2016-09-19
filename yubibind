@@ -2,6 +2,7 @@
 
 import sys
 import os
+import os.path
 
 yubi_vendor='1050'
 #yubi_product='0010'
@@ -17,15 +18,24 @@ for dev in os.listdir(devdir):
     print "Yubico device: %s" % dev
     devices.append(dev)
 
+drvdir = '/sys/bus/usb/drivers/usb'
 if sys.argv[1] == "on":
-    control = "/sys/bus/usb/drivers/usb/bind"
+    mode = "bind"
 elif sys.argv[1] == "off":
-    control = "/sys/bus/usb/drivers/usb/unbind"
+    mode = "unbind"
 else:
     print "Please indicate 'on' or 'off'"
     sys.exit(1)
 
+control = "%s/%s" % (drvdir, mode)
 for dev in devices:
+    if mode == "bind":
+        if os.path.exists("%s/%s" % (drvdir, dev)):
+            print "Device %s already bound" % dev
+            continue
+    elif not os.path.exists("%s/%s" % (drvdir, dev)):
+        print "Device %s not bound" % dev
+        continue
     print "%s > %s" % (dev, control)
     with open(control, 'w') as fo:
         fo.write(dev)
