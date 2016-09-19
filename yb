@@ -1,0 +1,11 @@
+#!/usr/bin/python
+
+import os
+import time
+
+os.system('sudo /usr/local/bin/yubibind on')
+try:
+    time.sleep(60)
+except KeyboardInterrupt:
+    pass
+os.system('sudo /usr/local/bin/yubibind off')
