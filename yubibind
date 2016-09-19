@@ -5,37 +5,51 @@ import os
 import os.path
 
 yubi_vendor='1050'
-#yubi_product='0010'
 devdir = '/sys/bus/usb/devices'
-devices = []
-for dev in os.listdir(devdir):
-    fn = '%s/%s/idVendor' % (devdir, dev)
-    if not os.path.exists(fn):
-        continue
-    vendor = open(fn).read().strip()
-    if vendor != yubi_vendor:
-        continue
-    print "Yubico device: %s" % dev
-    devices.append(dev)
-
 drvdir = '/sys/bus/usb/drivers/usb'
-if sys.argv[1] == "on":
-    mode = "bind"
-elif sys.argv[1] == "off":
-    mode = "unbind"
-else:
-    print "Please indicate 'on' or 'off'"
-    sys.exit(1)
 
-control = "%s/%s" % (drvdir, mode)
-for dev in devices:
-    if mode == "bind":
+
+def get_devices():
+    devices = []
+    for dev in os.listdir(devdir):
+        fn = '%s/%s/idVendor' % (devdir, dev)
+        if not os.path.exists(fn):
+            continue
+        vendor = open(fn).read().strip()
+        if vendor != yubi_vendor:
+            continue
+        print "Yubico device: %s" % dev
+        devices.append(dev)
+    return devices
+
+
+def set_device(dev, mode):
+    if mode == "on":
+        control = "%s/bind" % drvdir
         if os.path.exists("%s/%s" % (drvdir, dev)):
             print "Device %s already bound" % dev
-            continue
-    elif not os.path.exists("%s/%s" % (drvdir, dev)):
-        print "Device %s not bound" % dev
-        continue
+            return
+    elif mode == "off":
+        control = "%s/unbind" % drvdir
+        if not os.path.exists("%s/%s" % (drvdir, dev)):
+            print "Device %s not bound" % dev
+            return
     print "%s > %s" % (dev, control)
     with open(control, 'w') as fo:
         fo.write(dev)
+
+
+def main():
+    devices = get_devices()
+
+    mode = sys.argv[1]
+    if mode not in ['on', 'off']:
+        print "Please indicate 'on' or 'off'"
+        sys.exit(1)
+
+    for dev in devices:
+        set_device(dev, mode)
+
+
+if __name__ == '__main__':
+    main()
