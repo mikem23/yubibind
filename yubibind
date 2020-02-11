@@ -22,6 +22,8 @@ def get_devices():
             continue
         print("Yubico device: %s" % dev)
         devices.append(dev)
+    if not devices:
+        raise Exception('No devices found')
     return devices
 
 
